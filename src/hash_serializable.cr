@@ -5,6 +5,22 @@ class Hash
   module Serializable
     VERSION = "0.1.0"
 
+    {% begin %}
+    {% types = {} of TypeNode => Bool %}
+    {% for ivar in @type.instance_vars %}
+      {% types[ivar.type] = true %}
+    {% end %}
+
+      module Unmapped
+          @[Hash::Field(ignore: true)]
+          property hash_unmapped = {} of String => {{ types.keys.select { |k| k.resolve? }.map { |k| k.resolve }.join(" | ").id }}
+
+          protected def on_unknown_hash_attribute(key, value)
+            hash_unmapped[key] = value
+          end
+      end
+    {% end %}
+
     macro included
       def self.new
         super
@@ -89,7 +105,7 @@ class Hash
         {% end %}
 
         # Handle the unknown keys.
-        (hash.keys - found.keys).each {|key| on_unknown_hash_attribute(key)} 
+        (hash.keys - found.keys).each {|key| on_unknown_hash_attribute(key, hash[key])}
 
       {% end %}
     end
@@ -97,7 +113,7 @@ class Hash
     protected def after_initialize
     end
 
-    protected def on_unknown_hash_attribute(key)
+    protected def on_unknown_hash_attribute(key, value)
     end
 
     def to_hash
@@ -119,15 +135,10 @@ class Hash
     end
 
     module Strict
-      protected def on_unknown_hash_attribute(key)
+      protected def on_unknown_hash_attribute(key, value)
         raise ::Hash::SerializableError.new("Unknown Hash Key: #{key}", self.class.to_s)
       end
     end
-
-    module Unmapped
-      @[Hash::Field(ignore: true)]
-      property hash_unmapped = hash(String, )
-
   end
 
   class SerializableError < Exception
@@ -137,8 +148,11 @@ class Hash
     def initialize(
       message : String?,
       @klass : String,
-      @attribute : String? = nil)
-      super("  parsing #{klass}#{if (attribute = @attribute) {"##{attribute}"}}")
+      @attribute : String? = nil
+    )
+      super("  parsing #{klass}#{if (attribute = @attribute)
+                                   {"##{attribute}"}
+                                 end}")
     end
   end
 end

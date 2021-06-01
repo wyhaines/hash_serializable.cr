@@ -3,7 +3,7 @@ require "./spec_helper"
 describe Hash::Serializable do
   it "works to create an object without any parameters" do
     obj = TestBasic.new
-    
+
     obj.count.should eq 0
     obj.label.should be_nil
     obj.created_at.should be < Time.local
@@ -31,13 +31,13 @@ describe Hash::Serializable do
   it "from_hash() works" do
     created_at = Time.local
     obj = TestBasic.from_hash({
-      "count" => 123,
-      "name" => "TEST",
-      "created_at" => created_at})
+      "count"      => 123,
+      "name"       => "TEST",
+      "created_at" => created_at,
+    })
 
     obj.count.should eq 123
     obj.label.should eq "TEST"
     obj.created_at.should eq created_at
   end
-
 end
