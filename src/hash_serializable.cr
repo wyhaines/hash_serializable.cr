@@ -88,10 +88,16 @@ class Hash
           {% end %}
         {% end %}
 
+        # Handle the unknown keys.
+        (hash.keys - found.keys).each {|key| on_unknown_hash_attribute(key)} 
+
       {% end %}
     end
 
     protected def after_initialize
+    end
+
+    protected def on_unknown_hash_attribute(key)
     end
 
     def to_hash
@@ -112,5 +118,27 @@ class Hash
       {% end %}
     end
 
+    module Strict
+      protected def on_unknown_hash_attribute(key)
+        raise ::Hash::SerializableError.new("Unknown Hash Key: #{key}", self.class.to_s)
+      end
+    end
+
+    module Unmapped
+      @[Hash::Field(ignore: true)]
+      property hash_unmapped = hash(String, )
+
+  end
+
+  class SerializableError < Exception
+    getter klass : String
+    getter attribute : String?
+
+    def initialize(
+      message : String?,
+      @klass : String,
+      @attribute : String? = nil)
+      super("  parsing #{klass}#{if (attribute = @attribute) {"##{attribute}"}}")
+    end
   end
 end
