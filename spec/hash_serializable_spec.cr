@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-describe Hash::Serializeable do
+describe Hash::Serializable do
   # TODO: Write tests
 
   it "works to create an object without any parameters" do

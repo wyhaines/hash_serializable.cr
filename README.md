@@ -11,8 +11,8 @@ JSON::Serializable and YAML::Serializable, while working with hashes.
 
    ```yaml
    dependencies:
-     hash_serializeable:
-       github: your-github-user/hash_serializeable
+     hash_serializable:
+       github: your-github-user/hash_serializable
    ```
 
 2. Run `shards install`
@@ -20,7 +20,7 @@ JSON::Serializable and YAML::Serializable, while working with hashes.
 ## Usage
 
 ```crystal
-require "hash_serializeable"
+require "hash_serializable"
 ```
 
 TODO: Write usage instructions here
@@ -31,7 +31,7 @@ TODO: Write development instructions here
 
 ## Contributing
 
-1. Fork it (<https://github.com/wyhaines/hash_serializeable/fork>)
+1. Fork it (<https://github.com/wyhaines/hash_serializable/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

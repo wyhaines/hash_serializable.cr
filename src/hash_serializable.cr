@@ -2,7 +2,7 @@ class Hash
   annotation Field
   end
 
-  module Serializeable
+  module Serializable
     VERSION = "0.1.0"
 
     macro included

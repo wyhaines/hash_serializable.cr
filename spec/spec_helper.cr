@@ -1,8 +1,8 @@
 require "spec"
-require "../src/hash_serializeable"
+require "../src/hash_serializable"
 
 class TestBasic
-  include Hash::Serializeable
+  include Hash::Serializable
 
   property count : Int32
   
