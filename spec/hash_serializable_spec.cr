@@ -40,4 +40,41 @@ describe Hash::Serializable do
     obj.label.should eq "TEST"
     obj.created_at.should eq created_at
   end
+
+  it "captures unmapped hash elements" do
+    created_at = Time.local
+    obj = TestBasic.new({
+      "count"      => 123,
+      "name"       => "TEST",
+      "created_at" => created_at,
+      "extra"      => "that's me!"
+    })
+
+    obj.count.should eq 123
+    obj.label.should eq "TEST"
+    obj.created_at.should eq created_at
+    obj.hash_unmapped.empty?.should be_false
+    obj.hash_unmapped["extra"]?.should eq "that's me!"
+  end
+
+  it "is raises an exception on unmapped keys when Strict is included" do
+    e = nil
+    begin
+      obj = TestStrict.from_hash({"val" => 123})
+    rescue e : Exception
+    end
+
+    e.should be_nil
+    obj.not_nil!.val.should eq 123
+
+    begin
+      obj = TestStrict.from_hash({"val" => 456, "extra" => "that's me!"})
+    rescue e : Hash::SerializableError
+    end
+
+    if e
+      e.class.should eq Hash::SerializableError
+      e.message.should match /Unknown Hash Key: extra/
+    end
+  end
 end

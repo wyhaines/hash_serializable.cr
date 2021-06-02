@@ -5,22 +5,6 @@ class Hash
   module Serializable
     VERSION = "0.1.0"
 
-    {% begin %}
-    {% types = {} of TypeNode => Bool %}
-    {% for ivar in @type.instance_vars %}
-      {% types[ivar.type] = true %}
-    {% end %}
-
-      module Unmapped
-          @[Hash::Field(ignore: true)]
-          property hash_unmapped = {} of String => {{ types.keys.select { |k| k.resolve? }.map { |k| k.resolve }.join(" | ").id }}
-
-          protected def on_unknown_hash_attribute(key, value)
-            hash_unmapped[key] = value
-          end
-      end
-    {% end %}
-
     macro included
       def self.new
         super
@@ -105,7 +89,19 @@ class Hash
         {% end %}
 
         # Handle the unknown keys.
-        (hash.keys - found.keys).each {|key| on_unknown_hash_attribute(key, hash[key])}
+        {% begin %}
+          {% types = {} of TypeNode => Bool %}
+          {% for ivar in @type.instance_vars %}
+            {%
+              ann = ivar.annotation(::Hash::Field)
+              unless ann && ann[:ignore]
+                types[ivar.type] = true
+              end
+            %}
+          {% end %}
+
+          (hash.keys - found.keys).each {|key| on_unknown_hash_attribute(key, hash[key])}
+        {% end %}
 
       {% end %}
     end
@@ -120,15 +116,22 @@ class Hash
       {% begin %}
         {% types = {} of TypeNode => Bool %}
         {% for ivar in @type.instance_vars %}
-          {% types[ivar.type] = true %}
-        {% end %}
+        {%
+        ann = ivar.annotation(::Hash::Field)
+        unless ann && ann[:ignore]
+          types[ivar.type] = true
+        end
+      %}         
+      {% end %}
         h = {} of String => {{ types.keys.select { |k| k.resolve? }.map { |k| k.resolve }.join(" | ").id }}
         {% for ivar in @type.instance_vars %}
           {%
             ann = ivar.annotation(::Hash::Field)
             key = ((ann && ann[:key]) || ivar).id.stringify
-          %}  
-          h[{{ key }}] = @{{ ivar.name }}
+          %}
+          {% unless ann && ann[:ignore] %}
+            h[{{ key }}] = @{{ ivar.name }}
+          {% end %}
         {% end %}
         h
       {% end %}
@@ -138,6 +141,14 @@ class Hash
       protected def on_unknown_hash_attribute(key, value)
         raise ::Hash::SerializableError.new("Unknown Hash Key: #{key}", self.class.to_s)
       end
+    end
+
+    module Unmapped(K)
+        @[Hash::Field(ignore: true)]
+        property hash_unmapped = {} of String => K
+        protected def on_unknown_hash_attribute(key, value)
+          hash_unmapped[key] = value
+        end
     end
   end
 
@@ -150,7 +161,7 @@ class Hash
       @klass : String,
       @attribute : String? = nil
     )
-      super("  parsing #{klass}#{if (attribute = @attribute)
+      super("#{message}\n  parsing #{klass}#{if (attribute = @attribute)
                                    {"##{attribute}"}
                                  end}")
     end

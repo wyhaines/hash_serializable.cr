@@ -3,7 +3,7 @@ require "../src/hash_serializable"
 
 class TestBasic
   include Hash::Serializable
-  include Hash::Serializable::Unmapped
+  include Hash::Serializable::Unmapped(String? | Int32 | Bool | Time)
 
   property count : Int32
 
@@ -25,5 +25,5 @@ class TestStrict
   include Hash::Serializable
   include Hash::Serializable::Strict
 
-  property val : In32
+  property val : Int32
 end
