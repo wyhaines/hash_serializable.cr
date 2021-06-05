@@ -41,21 +41,34 @@ describe Hash::Serializable do
     obj.created_at.should eq created_at
   end
 
-  # it "captures unmapped hash elements" do
-  #   created_at = Time.local
-  #   obj = TestBasic.new({
-  #     "count"      => 123,
-  #     "name"       => "TEST",
-  #     "created_at" => created_at,
-  #     "extra"      => "that's me!",
-  #   })
+  it "captures unmapped hash elements" do
+    created_at = Time.local
+    obj = TestBasic.new({
+      "count"      => 123,
+      "name"       => "TEST",
+      "created_at" => created_at,
+      "extra"      => "that's me!",
+    })
 
-  #   obj.count.should eq 123
-  #   obj.label.should eq "TEST"
-  #   obj.created_at.should eq created_at
-  #   obj.hash_unmapped.empty?.should be_false
-  #   obj.hash_unmapped["extra"]?.should eq "that's me!"
-  # end
+    obj.count.should eq 123
+    obj.label.should eq "TEST"
+    obj.created_at.should eq created_at
+    obj.hash_unmapped.empty?.should be_false
+    obj.hash_unmapped["extra"]?.should eq "that's me!"
+  end
+
+  it "serialization with unmapped elements populates them back into the hash" do
+    created_at = Time.local
+    arg = {
+      "count"      => 123,
+      "name"       => "TEST",
+      "created_at" => created_at,
+      "extra"      => "that's me!",
+    }
+
+    obj = TestBasic.new(arg)
+    obj.to_hash.should eq arg
+  end
 
   it "is raises an exception on unmapped keys when Strict is included" do
     e = nil
@@ -93,18 +106,50 @@ describe Hash::Serializable do
     test_obj.count.should eq h[:count]
     test_obj.label.should eq h[:name]
     test_obj.created_at.should eq h[:created_at]
-    test_obj.to_hash.should eq h.transform_keys {|k| k.to_s}
+    test_obj.to_hash.should eq h.transform_keys { |k| k.to_s }
   end
 
   it "works with nested classes/hashes, too" do
-    house = House.from_hash({"address" => "Crystal Road 1234", "location" => {"lat" => 12.3, "lon" => 34.5}})
+    arg = {
+      "note" => {
+        "message" => "Nice Address",
+      },
+      "address"  => "Crystal Road 1234",
+      "location" => {
+        "lat"  => 12.3,
+        "lon"  => 34.5,
+        "note" => {
+          "message" => "hmmmm",
+        },
+      },
+    }
+    house = House.from_hash(arg)
 
     house.is_a?(House).should be_true
     house.address.should eq "Crystal Road 1234"
     house.location.is_a?(Location).should be_true
     house.location.not_nil!.latitude.should eq 12.3
     house.location.not_nil!.longitude.should eq 34.5
-    pp house.to_hash
+    house.note.message.should eq "Nice Address"
+    house.location.not_nil!.note.message.should eq "hmmmm"
+    house.to_hash.should eq arg
+  end
+
+  it "works with defaults for the ivars" do
+    arg = {
+      "note" => {
+        "message" => "Nice Address",
+      },
+      "address"  => "Crystal Road 1234",
+      "location" => {
+        "lat"  => 12.3,
+        "lon"  => 34.5,
+        "note" => {} of String => String,
+      },
+    }
+
+    house = House.from_hash(arg)
+    house.location.not_nil!.note.message.should eq "DEFAULT"
   end
 
 end

@@ -9,6 +9,12 @@ class Hash
   # ```
   # require "hash_serializable"
   #
+  # class Note
+  #   include Hash::Serializable
+  #
+  #   property message : String = "DEFAULT"
+  # end
+  #
   # class Location
   #   include Hash::Serializable
   #
@@ -17,7 +23,100 @@ class Hash
   #
   #   @[Hash::Field(key: "lon")]
   #   property longitude : Float64
+  #
+  #   property note : Note
   # end
+  #
+  # class House
+  #   include Hash::Serializable
+  #
+  #   property address : String
+  #   property location : Location?
+  #   property note : Note
+  # end
+  #
+  # arg = {
+  #   "note" => {
+  #     "message" => "Nice Address",
+  #   },
+  #   "address"  => "Crystal Road 1234",
+  #   "location" => {
+  #     "lat"  => 12.3,
+  #     "lon"  => 34.5,
+  #     "note" => {
+  #       "message" => "hmmmm",
+  #     },
+  #   },
+  # }
+  # house = House.from_hash(arg)
+  #
+  # house.is_a?(House).should be_true
+  # house.address.should eq "Crystal Road 1234"
+  # house.location.is_a?(Location).should be_true
+  # house.location.not_nil!.latitude.should eq 12.3
+  # house.location.not_nil!.longitude.should eq 34.5
+  # house.note.message.should eq "Nice Address"
+  # house.location.not_nil!.note.message.should eq "hmmmm"
+  # house.to_hash.should eq arg
+  #
+  # ### Usage
+  #
+  # Including `Hash::Serializable` will create `#to_hash` and `self.from_hash` methods
+  # on the current class, and a constructor which takes a Hash. By default, `self.from_hash`
+  # will deserialize a Hash into an instance of the object that it is passed to, according
+  # to the definition of the class, and `#to_hash` will serialize the class into a Hash
+  # containing the value of every instance variable, the keys being the instance variable
+  # names.
+  # 
+  # It will descend through a nested class structure, where variables in one class
+  # point to objects that, in turn, have instance variables. It should also deal correctly
+  # with type unions.
+  #
+  # To change how individual instance variables are parsed and serialized, the annotation
+  # `Hash::Field` can be placed on the instance variable. Annotating property, getter, and
+  # setter macros is also allowed.
+  #
+  # ```
+  # require "hash_serializable"
+  #
+  # struct A
+  #   include Hash::Serializable
+  #
+  #   @[Hash::Field(key: "my_key")]
+  #   getter a : Int32?
+  # end
+  # ```
+  #
+  # `Hash::Field` properties:
+  # * **ignore**: if `true` skip this field in serialization and deserialization (by default false)
+  # * **ignore_serialize**: if `true` skip this field in serialization (by default false)
+  # * **ignore_deserialize**: if `true` skip this field in deserialization (by default false)
+  # * **key**: the value of the key in the json object (by default the name of the instance variable)
+  # * **presence**: if `true`, a `@{{key}}_present` instance variable will be generated when the key was present (even if it has a `null` value), `false` by default; this does not declare the `@{{key}}_present` variable for you, so you will be responsible for ensuring that a Bool variable is declared
+  #
+  # Deserialization respects default values of variables.
+  #
+  # ### Extensions: `Hash::Serializable::Strict` and `Hash::Serializable::Unmapped`
+  #
+  # If the `Hash::Serializable::Strict` module is included, unknown properties in the Hash
+  # document will raise an exception. By default the unknown properties are silently ignored.
+  #
+  # If the `Hash::Serializable::Unmapped` module is included, unknown properties in the Hash
+  # will be stored in a hash with an appropriate type signature. On serialization, any keys inside json_unmapped
+  # will be serialized into the hash, as well.
+  # ```
+  # require "hash_serializable"
+  #
+  # struct A
+  #   include Hash::Serializable
+  #   include Hash::Serializable::Unmapped
+  #   @a : Int32
+  # end
+  #
+  # a = A.from_json(%({"a":1,"b":2})) # => A(@json_unmapped={"b" => 2_i64}, @a=1)
+  # a.to_json                         # => {"a":1,"b":2}
+  # ```
+
   module Serializable
     VERSION = "0.1.0"
 
@@ -26,42 +125,40 @@ class Hash
         super
       end
 
-      def self.new(hash : Hash(K,V)) forall K,V
+      def self.new(hash : U) forall U
         new_from_hash(hash)
       end
 
-      def self.new_from_hash(hash : Hash(K,V)) forall K,V
+      def self.new_from_hash(hash : U) forall U
         instance = allocate
         instance.initialize(hash)
         GC.add_finalizer(instance) if instance.responds_to?(:finalize)
         instance
       end
 
-      def self.from_hash(hash : Hash(K, V)) forall K, V
-        self.new(hash)
-      end
-
-      # This is a honeypot. It exists 
       def self.from_hash(hash : U) forall U
-        raise Exception.new("Error: #{typeof(hash)} is an invalid type. #from_hash requires a Hash.")
+        if Hash === hash
+          self.new(hash.as(Hash))
+        else
+          raise Exception.new("Error: #{typeof(hash)} is an invalid type. #from_hash requires a Hash, but got a #{hash.class}.")
+        end
       end
 
       macro inherited
-        def self.new(hash : Hash(K,V)) forall K,V
+        def self.new(hash : U) forall U
           new_from_hash(hash)
         end
       end
     end
 
-    def initialize(hash : Hash(K, V)) forall K, V
+    def initialize(hash : U) forall U
       # Normalize everything to string keys.
-      hash = hash.transform_keys {|k| k.to_s}
+      hash = hash.transform_keys { |k| k.to_s }
 
       {% begin %}
-        {%
-          # Generate a reference table for all of the properties that can be deserialized to
-          properties = {} of Nil => Nil
-        %}
+        {% # Generate a reference table for all of the properties that can be deserialized to
+
+        properties = {} of Nil => Nil %}
         {% for ivar in @type.instance_vars %}
           {% ann = ivar.annotation(::Hash::Field) %}
           {% unless ann && (ann[:ignore] || ann[:ignore_deserialize]) %}
@@ -73,7 +170,7 @@ class Hash
                 default:     ivar.default_value,
                 nilable:     ivar.type.nilable?,
                 root:        ann && ann[:root],
-                converter:   ann && ann[:converter],
+                # converter:   ann && ann[:converter], # Maybe implement this in the future
                 presence:    ann && ann[:presence],
               }
             %}
@@ -82,14 +179,10 @@ class Hash
 
         found = {} of String => Bool
         {% for name, value in properties %}
-        {% puts "#{name} == #{value}\n#{value[:type].union_types.map {|t| t.class.methods.map {|m| m.name.id}}}" %}
-        {% puts "#{value[:type].union_types.select {|ut| ut.class.methods.map {|m| m.name.stringify}.includes?("from_hash")}}" %}
           if hash.has_key?({{ value[:key] }})
             found[{{ value[:key] }}] = true
-            {% if value[:converter] %}
-              {{ name }}_val = {{ value[:converter] }}(hash[{{ value[:key] }}])
-            {% elsif !value[:type].union_types.select {|ut| ut.class.methods.map {|m| m.name.stringify}.includes?("from_hash")}.empty? %}
-              {{ name }}_val = {{ value[:type].union_types.select {|ut| ut.class.methods.map {|m| m.name.stringify}.includes?("from_hash")}.first }}.from_hash(hash[{{ value[:key] }}])
+            {% if !value[:type].union_types.select { |ut| ut.class.methods.map { |m| m.name.stringify }.includes?("from_hash") }.empty? %}
+              {{ name }}_val = {{ value[:type].union_types.select { |ut| ut.class.methods.map { |m| m.name.stringify }.includes?("from_hash") }.first }}.from_hash(hash[{{ value[:key] }}])
             {% else %}
               {% if value[:has_default] %}
                 if hash[{{ value[:key] }}].is_a?({{ value[:type] }})
@@ -110,21 +203,28 @@ class Hash
             found[{{ value[:key] }}] = false
           end
 
-          {{ name }}_val = {{ name }}_val.as({{ value[:type] }})
-          {% if value[:nillable] %}
+          {% if value[:nilable] %}
             {% if value[:has_default] %}
-              @{{ name }} = found[{{ value[:key] }}]  ? val : {{ value[:default] }}
+              @{{ name }} = found[{{ value[:key] }}] && {{ name }}_val.as?({{ value[:type] }}) ? {{ name }}_val : {{ value[:default] }}
             {% else %}
-              @{{ name }} = {{ name }}_val
+              @{{ name }} = {{ name }}_val.as?({{ value[:type] }})
             {% end %}
           {% elsif value[:has_default] %}
             if !found[{{ value[:key] }}]
               @{{ name }} = {{ value[:default] }}
             else
-              @{{ name }} = {{ name }}_val
+              if {{ name }}_val.nil?
+                {{ value[:default] }}
+              else
+                @{{ name }} = {{ name }}_val.as({{ value[:type] }})
+              end
             end
           {% else %}
-            @{{ name }} = {{ name }}_val
+            if {{ name }}_val.nil?
+              raise ::Hash::SerializableError.new("Value for key {{name}} is not present, and this field is not nilable and has no default.", self.class.to_s)
+            else
+              @{{ name }} = {{ name }}_val.as({{ value[:type] }})
+            end
           {% end %}
 
           {% if value[:presence] %}
@@ -159,31 +259,36 @@ class Hash
     def to_hash
       {% begin %}
         {%
-          tstack = [] of Nil
-          ostack = [] of Nil
-          estack = [] of Nil
-        
+          # This monsterous code walks the object structure, finding all of the
+          # instance variables in all of the nested objects in order to determine
+          # what the type signature must be for the generated Hash.
+          # Walking an arbitrarily nested structure when one can't define any sort
+          # of method or proc, can't use while loops, can't use next or break, and
+          # can't delete elements from an array, among other restrictions, is tricky.
+          tstack = [] of Nil # tstack is the type stack
+          ostack = [] of Nil # ostack is the object stack
+          estack = [] of Nil # estack is the element stack - actually array indexes to be used with the ostack
+
           tstack << [] of Nil
           ostack << @type.instance_vars
           estack << (0..(@type.instance_vars.size - 1)).to_a
-        
-          (1..99999).each do
-            if !ostack.empty?
-        
+
+          (1..99999).each do # while loops aren't allowed, so we just pick an arbitrary number that is probably big enough
+            if !ostack.empty? # These lines implement a really inefficient array pop.
               o = ostack.last
               oo = ostack
               ostack = [] of Nil
               (0..(oo.size - 2)).each do |idx|
                 ostack << oo[idx]
               end
-        
+
               keys = estack.last
               oe = estack
               estack = [] of Nil
               (0..(oe.size - 2)).each do |idx|
                 estack << oe[idx]
               end
-        
+
               if !keys.nil? && !keys.empty?
                 (1..99999).each do
                   if !keys.nil? && !keys.empty?
@@ -193,8 +298,8 @@ class Hash
                     (1..(ok.size - 1)).each do |idx|
                       keys << ok[idx]
                     end
-                    if o[e].type.union_types.reject {|typ| typ == Nil}.first.class.methods.map {|m| m.name.stringify}.includes?("from_hash")
-                      oe = o[e].type.union_types.reject {|typ| typ == Nil}.first
+                    if o[e].type.union_types.reject { |typ| typ == Nil }.first.class.methods.map { |m| m.name.stringify }.includes?("from_hash")
+                      oe = o[e].type.union_types.reject { |typ| typ == Nil }.first
                       tstack << [] of Nil
                       ostack << o
                       estack << keys
@@ -202,8 +307,12 @@ class Hash
                       estack << (0..(oe.instance_vars.size - 1)).to_a
                       keys = [] of Nil
                     else
-                      tstack.last << o[e].type
-        
+                      if o[e].type.nilable?
+                        tstack.last << "#{o[e].type} | Nil"
+                      else
+                        tstack.last << o[e].type
+                      end
+
                       if keys.empty? && tstack.size > 1
                         ot = tstack
                         top = tstack.last
@@ -212,6 +321,7 @@ class Hash
                           tstack << ot[idx]
                         end
                         tstack.last << top
+                        tstack.last << Nil
                       end
                     end
                   end
@@ -228,31 +338,38 @@ class Hash
             end
           end
 
-          puts "\n\n\n**********\n#{tstack}"
           types = {} of TypeNode => Bool
           tstack.first.each do |type|
             types[type] = true
           end
-          puts "==========\n#{types}"
+
+          type_string = types.keys.map do |m|
+            m.id
+          end.join(" | ").id.
+          gsub(/\s*,\s*/, " | ").
+          gsub(/\[/, "Hash(String, ").gsub(/]/, ")").gsub(/Hash\(String\s*\|/, "Hash(String, ").id
         %}
 
-        # {{ types }}
-        h = {} of String => {{ types.keys.map {|m| m.id}.join(" | ").id }}
+        h = {} of String => ({{ type_string }}) 
         {% for ivar in @type.instance_vars %}
           {%
             ann = ivar.annotation(::Hash::Field)
             key = ((ann && ann[:key]) || ivar).id.stringify
           %}
           {% unless ann && (ann[:ignore] || ann[:ignore_serialize]) %}
-            ivar_name = @{{ ivar.name }}
-            if ivar_name.responds_to?(:to_hash)
-              h[{{ key }}] = ivar_name.to_hash
+            {{ ivar.name }}_ivar = @{{ ivar.name }}
+            if {{ ivar.name }}_ivar.responds_to?(:to_hash)
+              h[{{ key }}] = {{ ivar.name }}_ivar.to_hash
             else
-              h[{{ key }}] = ivar_name
+              h[{{ key }}] = {{ ivar.name }}_ivar
             end
           {% end %}
         {% end %}
-        h
+        {% if @type.instance_vars.select {|iv| iv.name.stringify == "hash_unmapped"}.empty? %}
+          h
+        {% else %}
+          h.merge(@hash_unmapped)
+        {% end %}  
       {% end %}
     end
 
@@ -267,7 +384,7 @@ class Hash
       property hash_unmapped = {} of String => K
 
       protected def on_unknown_hash_attribute(key, value)
-        #hash_unmapped[key] = value
+        hash_unmapped[key] = value.as?(K)
       end
     end
   end

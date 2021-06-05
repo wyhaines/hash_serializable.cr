@@ -31,7 +31,7 @@ end
 class Note
   include Hash::Serializable
 
-  property note : String = ""
+  property message : String = "DEFAULT"
 end
 
 class Location
