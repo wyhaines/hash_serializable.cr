@@ -96,7 +96,7 @@ To change how individual instance variables are parsed and serialized, the annot
 `Hash::Field` can be placed on the instance variable. Annotating property, getter, and
 setter macros is also allowed.
 
-```
+```crystal
 require "hash_serializable"
 
 struct A
@@ -125,7 +125,7 @@ If the `Hash::Serializable::Unmapped` module is included, unknown properties in 
 will be stored in a hash with an appropriate type signature. On serialization, any keys inside json_unmapped
 will be serialized into the hash, as well.
 
-```
+```crystal
 require "hash_serializable"
 
 struct A
