@@ -81,7 +81,7 @@ describe Hash::Serializable do
     obj.not_nil!.val.should eq 123
 
     begin
-      obj = TestStrict.from_hash({"val" => 456, "extra" => "that's me!"})
+      TestStrict.from_hash({"val" => 456, "extra" => "that's me!"})
     rescue e : Hash::SerializableError
     end
 
@@ -106,7 +106,7 @@ describe Hash::Serializable do
     test_obj.count.should eq h[:count]
     test_obj.label.should eq h[:name]
     test_obj.created_at.should eq h[:created_at]
-    test_obj.to_hash.should eq h.transform_keys { |k| k.to_s }
+    test_obj.to_hash.should eq h.transform_keys(&.to_s)
   end
 
   it "works with nested classes/hashes, too" do

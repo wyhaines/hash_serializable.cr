@@ -67,7 +67,7 @@ class Hash
   # to the definition of the class, and `#to_hash` will serialize the class into a Hash
   # containing the value of every instance variable, the keys being the instance variable
   # names.
-  # 
+  #
   # It will descend through a nested class structure, where variables in one class
   # point to objects that, in turn, have instance variables. It should also deal correctly
   # with type unions.
@@ -153,7 +153,7 @@ class Hash
 
     def initialize(hash : U) forall U
       # Normalize everything to string keys.
-      hash = hash.transform_keys { |k| k.to_s }
+      hash = hash.transform_keys(&.to_s)
 
       {% begin %}
         {% # Generate a reference table for all of the properties that can be deserialized to
@@ -181,8 +181,8 @@ class Hash
         {% for name, value in properties %}
           if hash.has_key?({{ value[:key] }})
             found[{{ value[:key] }}] = true
-            {% if !value[:type].union_types.select { |ut| ut.class.methods.map { |m| m.name.stringify }.includes?("from_hash") }.empty? %}
-              {{ name }}_val = {{ value[:type].union_types.select { |ut| ut.class.methods.map { |m| m.name.stringify }.includes?("from_hash") }.first }}.from_hash(hash[{{ value[:key] }}])
+            {% if !value[:type].union_types.select { |ut| ut.class.methods.map(&.name.stringify).includes?("from_hash") }.empty? %}
+              {{ name }}_val = {{ value[:type].union_types.select { |ut| ut.class.methods.map(&.name.stringify).includes?("from_hash") }.first }}.from_hash(hash[{{ value[:key] }}])
             {% else %}
               {% if value[:has_default] %}
                 if hash[{{ value[:key] }}].is_a?({{ value[:type] }})
@@ -298,7 +298,7 @@ class Hash
                     (1..(ok.size - 1)).each do |idx|
                       keys << ok[idx]
                     end
-                    if o[e].type.union_types.reject { |typ| typ == Nil }.first.class.methods.map { |m| m.name.stringify }.includes?("from_hash")
+                    if o[e].type.union_types.reject { |typ| typ == Nil }.first.class.methods.map(&.name.stringify).includes?("from_hash")
                       oe = o[e].type.union_types.reject { |typ| typ == Nil }.first
                       tstack << [] of Nil
                       ostack << o
@@ -350,7 +350,7 @@ class Hash
           gsub(/\[/, "Hash(String, ").gsub(/]/, ")").gsub(/Hash\(String\s*\|/, "Hash(String, ").id
         %}
 
-        h = {} of String => ({{ type_string }}) 
+        h = {} of String => ({{ type_string }})
         {% for ivar in @type.instance_vars %}
           {%
             ann = ivar.annotation(::Hash::Field)
@@ -369,7 +369,7 @@ class Hash
           h
         {% else %}
           h.merge(@hash_unmapped)
-        {% end %}  
+        {% end %}
       {% end %}
     end
 
