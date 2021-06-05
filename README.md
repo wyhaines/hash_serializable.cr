@@ -1,5 +1,9 @@
 # hash_serializable
 
+![Send.cr CI](https://img.shields.io/github/workflow/status/wyhaines/hash_serializable.cr/hash_serializable%20CI?style=for-the-badge&logo=GitHub)
+[![GitHub release](https://img.shields.io/github/release/wyhaines/hash_sedrializable.cr.svg?style=for-the-badge)](https://github.com/wyhaines/hash_serializable.cr/releases)
+![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/wyhaines/hash_serializable.cr/latest?style=for-the-badge)
+
 It can be useful to be able to serialize and deserialize between hashes
 and objects the same way that one can between JSON and objects and YAML
 and objects. This implementation is aiming to be feature-consistent with
@@ -151,3 +155,6 @@ TODO: Write development instructions here
 ## Contributors
 
 - [Kirk Haines](https://github.com/wyhaines) - creator and maintainer
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/wyhaines/hash_serializable.cr?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/wyhaines/hash_serializable.cr?style=for-the-badge)
