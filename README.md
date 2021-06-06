@@ -177,7 +177,9 @@ The library does not yet support having procs or methods which will cast back to
 
 ## Development
 
-TODO: Write development instructions here
+If you want to help to fix bugs, clean up the code or the documentation, or help with additional features, fork the repository, and work in your fork, and then create a pull request against this repository.
+
+Check [issues](https://github.com/wyhaines/hash_serializable.cr/issues) for any known problems, and create new issues if you have problems or questions or feature requests.
 
 ## Contributing
 
