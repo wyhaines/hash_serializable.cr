@@ -223,7 +223,7 @@ setter macros is also allowed.</p>
 
 <p><code><a href="Hash/Field.html">Hash::Field</a></code> properties:</p>
 
-<ul><li><strong>ignore</strong>: if <code>true</code> skip this field in serialization and deserialization (by default false)</li><li><strong>ignore_serialize</strong>: if <code>true</code> skip this field in serialization (by default false)</li><li><strong>ignore_deserialize</strong>: if <code>true</code> skip this field in deserialization (by default false)</li><li><strong>key</strong>: the value of the key in the json object (by default the name of the instance variable)</li><li><strong>presence</strong>: if <code>true</code>, a <code>@{{key}}_present</code> instance variable will be generated when the key was present (even if it has a <code>null</code> value), <code>false</code> by default; this does not declare the <code>@{{key}}_present</code> variable for you, so you will be responsible for ensuring that a Bool variable is declared</li></ul>
+<ul><li><strong>ignore</strong>: if <code>true</code> skip this field in serialization and deserialization (by default false)</li><li><strong>ignore_serialize</strong>: if <code>true</code> skip this field in serialization (by default false)</li><li><strong>ignore_deserialize</strong>: if <code>true</code> skip this field in deserialization (by default false)</li><li><strong>key</strong>: the value of the key in the json object (by default the name of the instance variable)</li><li><strong>cast</strong>: takes either a proc, or a method name; if proc, the hash value will be passed to the proc, and the return value will be used as the value of the instance variable; if method, the method will be called <em>on</em> the hash value, and the return value used for the instance variable value</li><li><strong>presence</strong>: if <code>true</code>, a <code>@{{key}}_present</code> instance variable will be generated when the key was present (even if it has a <code>null</code> value), <code>false</code> by default; this does not declare the <code>@{{key}}_present</code> variable for you, so you will be responsible for ensuring that a Bool variable is declared</li></ul>
 
 <p>Deserialization respects default values of variables.</p>
 
@@ -251,7 +251,41 @@ will be serialized into the hash, as well.</p>
 a <span class="o">=</span> <span class="t">A</span>.from_json(<span class="s">%({&quot;a&quot;:1,&quot;b&quot;:2})</span>) <span class="c"># =&gt; A(@json_unmapped={&quot;b&quot; =&gt; 2_i64}, @a=1)</span>
 a.to_json                         <span class="c"># =&gt; {&quot;a&quot;:1,&quot;b&quot;:2}</span></code></pre>
 
-<p><span class="flag orange">TODO</span>  Write usage instructions here</p>
+<h3><a id="casting" class="anchor" href="#casting">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Casting</h3>
+
+<p><em>Hash::Serializable</em> can automatically convert values from one type to another. For example, if one has a <em>RequestParams</em> object that serialized the query parameters in an HTTP request, and one wanted to define a <em>user_id</em> field that was an integer, one might do something like this:</p>
+
+<pre><code class="language-crystal"><span class="k">struct</span> <span class="t">RequestParams</span>
+  use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
+
+  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(cast: <span class="n">:to_i</span>)]
+  getter user_id : <span class="t">Int32</span>
+<span class="k">end</span>
+
+params <span class="o">=</span> <span class="t">RequestParams</span>.<span class="k">new</span>({<span class="s">&quot;user_id&quot;</span> => <span class="s">&quot;123&quot;</span>})
+pp params <span class="c"># &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;</span></code></pre>
+
+<p>One can also provide a proc to do the value conversion:</p>
+
+<pre><code class="language-crystal"><span class="k">struct</span> <span class="t">MyObj</span>
+  use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
+
+  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(
+    key: <span class="s">&quot;number&quot;</span>,
+    cast: ->(x : <span class="t">String</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Signed</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Unsigned</span> <span class="o">|</span> <span class="t">Float</span><span class="t">::</span><span class="t">Primitive</span>) <span class="k">do</span>
+      <span class="t">BigInt</span>.<span class="k">new</span>(x) <span class="o">**</span> <span class="n">2</span>
+    <span class="k">end</span>)]
+  getter square : <span class="t">BigInt</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="t">MyObj</span>.<span class="k">new</span>({<span class="s">&quot;number&quot;</span> => <span class="n">12345678901234567890</span>})
+pp obj <span class="c"># &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;</span></code></pre>
+
+<p>The library does not yet support having procs or methods which will cast back to the original type.</p>
 
 <h2><a id="development" class="anchor" href="#development">
   <svg class="octicon-link" aria-hidden="true">

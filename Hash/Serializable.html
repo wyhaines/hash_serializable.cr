@@ -108,6 +108,170 @@
 
 
 
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>The <code><a href="../Hash/Serializable.html">Hash::Serializable</a></code> module automatically generates methods for serialization when included.</p>
+
+<h3><a id="example" class="anchor" href="#example">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Example</h3>
+
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hash_serializable&quot;</span>
+
+<span class="k">class</span> <span class="t">Note</span>
+  <span class="k">include</span> <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
+
+  property message : <span class="t">String</span> <span class="o">=</span> <span class="s">&quot;DEFAULT&quot;</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="t">Location</span>
+  <span class="k">include</span> <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
+
+  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(key: <span class="s">&quot;lat&quot;</span>)]
+  property latitude : <span class="t">Float64</span>
+
+  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(key: <span class="s">&quot;lon&quot;</span>)]
+  property longitude : <span class="t">Float64</span>
+
+  property note : <span class="t">Note</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="t">House</span>
+  <span class="k">include</span> <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
+
+  property address : <span class="t">String</span>
+  property location : <span class="t">Location</span>?
+  property note : <span class="t">Note</span>
+<span class="k">end</span>
+
+arg <span class="o">=</span> {
+  <span class="s">&quot;note&quot;</span> => {
+    <span class="s">&quot;message&quot;</span> => <span class="s">&quot;Nice Address&quot;</span>,
+  },
+  <span class="s">&quot;address&quot;</span>  => <span class="s">&quot;Crystal Road 1234&quot;</span>,
+  <span class="s">&quot;location&quot;</span> => {
+    <span class="s">&quot;lat&quot;</span>  => <span class="n">12.3</span>,
+    <span class="s">&quot;lon&quot;</span>  => <span class="n">34.5</span>,
+    <span class="s">&quot;note&quot;</span> => {
+      <span class="s">&quot;message&quot;</span> => <span class="s">&quot;hmmmm&quot;</span>,
+    },
+  },
+}
+house <span class="o">=</span> <span class="t">House</span>.from_hash(arg)
+
+house.<span class="k">is_a?</span>(<span class="t">House</span>).should be_true
+house.address.should eq <span class="s">&quot;Crystal Road 1234&quot;</span>
+house.location.<span class="k">is_a?</span>(<span class="t">Location</span>).should be_true
+house.location.not_nil!.latitude.should eq <span class="n">12.3</span>
+house.location.not_nil!.longitude.should eq <span class="n">34.5</span>
+house.note.message.should eq <span class="s">&quot;Nice Address&quot;</span>
+house.location.not_nil!.note.message.should eq <span class="s">&quot;hmmmm&quot;</span>
+house.to_hash.should eq arg
+
+<span class="c">### Usage</span>
+
+<span class="t">Including</span> <span class="s">`Hash::Serializable`</span> will create <span class="s">`#to_hash`</span> and <span class="s">`self.from_hash`</span> methods
+on the current <span class="k">class</span>, and a constructor which takes a <span class="t">Hash</span>. <span class="t">By</span> default, <span class="s">`self.from_hash`</span>
+will deserialize a <span class="t">Hash</span> into an instance <span class="k">of</span> the object that it is passed to, according
+to the definition <span class="k">of</span> the <span class="k">class</span>, and <span class="s">`#to_hash`</span> will serialize the <span class="k">class</span> into a <span class="t">Hash</span>
+containing the value <span class="k">of</span> every instance variable, the keys being the instance variable
+names.
+
+<span class="t">It</span> will descend through a nested <span class="k">class</span> structure, where variables <span class="k">in</span> one <span class="k">class</span>
+point to objects that, <span class="k">in</span> turn, have instance variables. <span class="t">It</span> should also deal correctly
+<span class="k">with</span> <span class="k">type</span> unions.
+
+<span class="t">To</span> change how individual instance variables are parsed and serialized, the <span class="k">annotation</span>
+<span class="s">`Hash::Field`</span> can be placed on the instance variable. <span class="t">Annotating</span> property, getter, and
+setter macros is also allowed.
+</code></pre>
+
+<p>require "hash_serializable"</p>
+
+<p>struct A
+  include Hash::Serializable</p>
+
+<p>@[Hash::Field(key: "my_key")]
+  getter a : Int32?
+end</p>
+
+<pre><code class="language-crystal">
+<span class="s">`Hash::Field`</span> properties:
+<span class="o">*</span> <span class="o">**</span>ignore<span class="o">**</span>: <span class="k">if</span> <span class="s">`true`</span> skip this field <span class="k">in</span> serialization and deserialization (by default <span class="n">false</span>)
+<span class="o">*</span> <span class="o">**</span>ignore_serialize<span class="o">**</span>: <span class="k">if</span> <span class="s">`true`</span> skip this field <span class="k">in</span> serialization (by default <span class="n">false</span>)
+<span class="o">*</span> <span class="o">**</span>ignore_deserialize<span class="o">**</span>: <span class="k">if</span> <span class="s">`true`</span> skip this field <span class="k">in</span> deserialization (by default <span class="n">false</span>)
+<span class="o">*</span> <span class="o">**</span>key<span class="o">**</span>: the value <span class="k">of</span> the key <span class="k">in</span> the json object (by default the name <span class="k">of</span> the instance variable)
+<span class="o">*</span> <span class="o">**</span>cast<span class="o">**</span>: takes either a proc, or a method name; <span class="k">if</span> proc, the hash value will be passed to the proc, and the <span class="k">return</span> value will be used <span class="k">as</span> the value <span class="k">of</span> the instance variable; <span class="k">if</span> method, the method will be called <span class="o">*</span>on<span class="o">*</span> the hash value, and the <span class="k">return</span> value used <span class="k">for</span> the instance variable value
+<span class="o">*</span> <span class="o">**</span>presence<span class="o">**</span>: <span class="k">if</span> <span class="s">`true`</span>, a <span class="s">`@{{key}}_present`</span> instance variable will be generated <span class="k">when</span> the key was present (even <span class="k">if</span> it has a <span class="s">`null`</span> value), <span class="s">`false`</span> by default; this does not declare the <span class="s">`@{{key}}_present`</span> variable <span class="k">for</span> you, so you will be responsible <span class="k">for</span> ensuring that a <span class="t">Bool</span> variable is declared
+
+<span class="t">Deserialization</span> respects default values <span class="k">of</span> variables.
+
+<span class="c">### Extensions: `Hash::Serializable::Strict` and `Hash::Serializable::Unmapped`</span>
+
+<span class="t">If</span> the <span class="s">`Hash::Serializable::Strict`</span> <span class="k">module</span> is included, unknown properties <span class="k">in</span> the <span class="t">Hash</span>
+document will raise an exception. <span class="t">By</span> default the unknown properties are silently ignored.
+
+<span class="t">If</span> the <span class="s">`Hash::Serializable::Unmapped`</span> <span class="k">module</span> is included, unknown properties <span class="k">in</span> the <span class="t">Hash</span>
+will be stored <span class="k">in</span> a hash <span class="k">with</span> an appropriate <span class="k">type</span> signature. <span class="t">On</span> serialization, any keys inside json_unmapped
+will be serialized into the hash, <span class="k">as</span> well.</code></pre>
+
+<p>require "hash_serializable"</p>
+
+<p>struct A
+  include Hash::Serializable
+  include Hash::Serializable::Unmapped
+  @a : Int32
+end</p>
+
+<p>a = A.from_json(%({"a":1,"b":2})) # => A(@json_unmapped={"b" => 2_i64}, @a=1)
+a.to_json                         # => {"a":1,"b":2}</p>
+
+<pre><code class="language-crystal">
+<span class="c">## Casting</span>
+
+<span class="o">*</span><span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span><span class="o">*</span> can automatically convert values from one <span class="k">type</span> to another. <span class="t">For</span> example, <span class="k">if</span> one has a <span class="o">*</span><span class="t">RequestParams</span><span class="o">*</span> object that serialized the query parameters <span class="k">in</span> an <span class="t">HTTP</span> request, and one wanted to define a <span class="o">*</span>user_id<span class="o">*</span> field that was an integer, one might <span class="k">do</span> something like this:
+
+  <span class="s">``</span><span class="s">`crystal
+  struct RequestParams
+    use Hash::Serializable
+
+    @[Hash::Field(cast: :to_i)]
+    getter user_id : Int32
+  end
+
+  params = RequestParams.new({&quot;user_id&quot; =&gt; &quot;123&quot;})
+  pp params # &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;
+  `</span><span class="s">``</span>
+
+  <span class="t">One</span> can also provide a proc to <span class="k">do</span> the value conversion:
+
+  <span class="s">``</span><span class="s">`crystal
+  struct MyObj
+    use Hash::Serializable
+
+    @[Hash::Field(
+      key: &quot;number&quot;,
+      cast: -&gt;(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
+        BigInt.new(x) ** 2
+      end)]
+    getter square : BigInt
+  end
+
+  obj = MyObj.new({&quot;number&quot; =&gt; 12345678901234567890})
+  pp obj # &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;
+  `</span><span class="s">``</span>
+
+  <span class="t">The</span> library does not yet support having procs or methods which will cast back to the original <span class="k">type</span>.</code></pre>
+
 
 
 
