@@ -1,7 +1,7 @@
 # hash_serializable
 
 ![Send.cr CI](https://img.shields.io/github/workflow/status/wyhaines/hash_serializable.cr/hash_serializable%20CI?style=for-the-badge&logo=GitHub)
-[![GitHub release](https://img.shields.io/github/release/wyhaines/hash_sedrializable.cr.svg?style=for-the-badge)](https://github.com/wyhaines/hash_serializable.cr/releases)
+[![GitHub release](https://img.shields.io/github/release/wyhaines/hash_serializable.cr.svg?style=for-the-badge)](https://github.com/wyhaines/hash_serializable.cr/releases)
 ![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/wyhaines/hash_serializable.cr/latest?style=for-the-badge)
 
 It can be useful to be able to serialize and deserialize between hashes
@@ -96,7 +96,7 @@ To change how individual instance variables are parsed and serialized, the annot
 `Hash::Field` can be placed on the instance variable. Annotating property, getter, and
 setter macros is also allowed.
 
-```
+```crystal
 require "hash_serializable"
 
 struct A
@@ -126,7 +126,7 @@ If the `Hash::Serializable::Unmapped` module is included, unknown properties in 
 will be stored in a hash with an appropriate type signature. On serialization, any keys inside json_unmapped
 will be serialized into the hash, as well.
 
-```
+```crystal
 require "hash_serializable"
 
 struct A
