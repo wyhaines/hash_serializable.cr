@@ -53,3 +53,13 @@ class House
   property location : Location?
   property note : Note
 end
+
+class Castit
+  include Hash::Serializable
+
+  @[Hash::Field(cast: ->(x : Int::Signed | Int::Unsigned | Float::Primitive | String) { x.to_s })]
+  property whatever : String
+
+  @[Hash::Field(key: "number", cast: :to_i)]
+  property everything_is_a_number : Int32
+end

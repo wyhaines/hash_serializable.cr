@@ -92,6 +92,7 @@ class Hash
   # * **ignore_serialize**: if `true` skip this field in serialization (by default false)
   # * **ignore_deserialize**: if `true` skip this field in deserialization (by default false)
   # * **key**: the value of the key in the json object (by default the name of the instance variable)
+  # * **cast**: takes either a proc, or a method name; if proc, the hash value will be passed to the proc, and the return value will be used as the value of the instance variable; if method, the method will be called *on* the hash value, and the return value used for the instance variable value
   # * **presence**: if `true`, a `@{{key}}_present` instance variable will be generated when the key was present (even if it has a `null` value), `false` by default; this does not declare the `@{{key}}_present` variable for you, so you will be responsible for ensuring that a Bool variable is declared
   #
   # Deserialization respects default values of variables.
@@ -116,7 +117,43 @@ class Hash
   # a = A.from_json(%({"a":1,"b":2})) # => A(@json_unmapped={"b" => 2_i64}, @a=1)
   # a.to_json                         # => {"a":1,"b":2}
   # ```
-
+  #
+  ### Casting
+  #
+  # *Hash::Serializable* can automatically convert values from one type to another. For example, if one has a *RequestParams* object that serialized the query parameters in an HTTP request, and one wanted to define a *user_id* field that was an integer, one might do something like this:
+  #
+  #   ```crystal
+  #   struct RequestParams
+  #     use Hash::Serializable
+  #
+  #     @[Hash::Field(cast: :to_i)]
+  #     getter user_id : Int32
+  #   end
+  #
+  #   params = RequestParams.new({"user_id" => "123"})
+  #   pp params # >    #<RequestParams:0x7f2653e2f080 @user_id=123 >
+  #   ```
+  #
+  #   One can also provide a proc to do the value conversion:
+  #
+  #   ```crystal
+  #   struct MyObj
+  #     use Hash::Serializable
+  #
+  #     @[Hash::Field(
+  #       key: "number",
+  #       cast: ->(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
+  #         BigInt.new(x) ** 2
+  #       end)]
+  #     getter square : BigInt
+  #   end
+  #
+  #   obj = MyObj.new({"number" => 12345678901234567890})
+  #   pp obj # >    #<MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100>
+  #   ```
+  #
+  #   The library does not yet support having procs or methods which will cast back to the original type.
+  #
   module Serializable
     VERSION = "0.1.0"
 
@@ -170,7 +207,7 @@ class Hash
                 default:     ivar.default_value,
                 nilable:     ivar.type.nilable?,
                 root:        ann && ann[:root],
-                # converter:   ann && ann[:converter], # Maybe implement this in the future
+                cast:        ann && ann[:cast],
                 presence:    ann && ann[:presence],
               }
             %}
@@ -181,7 +218,23 @@ class Hash
         {% for name, value in properties %}
           if hash.has_key?({{ value[:key] }})
             found[{{ value[:key] }}] = true
-            {% if !value[:type].union_types.select { |ut| ut.class.methods.map(&.name.stringify).includes?("from_hash") }.empty? %}
+            {%
+              # If a cast is defined, attempt to convert values.
+            %}
+            {% if value[:cast] %}
+              {% if value[:cast].is_a?(ProcLiteral) %}
+                inner_val = {{ value[:cast] }}.call(hash[{{ value[:key] }}])
+              {% else %}
+                inner_val = hash[{{ value[:key] }}].{{ value[:cast].id }}
+              {% end %}
+              {% if value[:has_default] %}
+                {{ name }}_val = inner_val.as?({{ value[:type] }}) || {{ value[:default] }}
+              {% elsif value[:nilable] %}
+                {{ name }}_val = inner_val.as?({{ value[:type] }})
+              {% else %}
+                {{ name }}_val = inner_val.as({{ value[:type] }})
+              {% end %}
+            {% elsif !value[:type].union_types.select { |ut| ut.class.methods.map(&.name.stringify).includes?("from_hash") }.empty? %}
               {{ name }}_val = {{ value[:type].union_types.select { |ut| ut.class.methods.map(&.name.stringify).includes?("from_hash") }.first }}.from_hash(hash[{{ value[:key] }}])
             {% else %}
               {% if value[:has_default] %}

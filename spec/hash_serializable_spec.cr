@@ -152,4 +152,9 @@ describe Hash::Serializable do
     house.location.not_nil!.note.message.should eq "DEFAULT"
   end
 
+  it "can cast values from hash to object, using both methods and procs" do
+    obj = Castit.new({"whatever" => 123, "number" => "456"})
+    obj.whatever.should eq "123"
+    obj.everything_is_a_number.should eq 456
+  end
 end
