@@ -155,7 +155,7 @@ class Hash
   #   The library does not yet support having procs or methods which will cast back to the original type.
   #
   module Serializable
-    VERSION = "0.1.0"
+    VERSION = "0.2.0"
 
     macro included
       def self.new
