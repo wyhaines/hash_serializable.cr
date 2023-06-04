@@ -226,35 +226,33 @@ end</p>
 <p>a = A.from_json(%({&quot;a&quot;:1,&quot;b&quot;:2})) # =&gt; A(@json_unmapped={&quot;b&quot; =&gt; 2_i64}, @a=1)
 a.to_json                         # =&gt; {&quot;a&quot;:1,&quot;b&quot;:2}</p>
 <pre><code class="language-crystal">
-## Casting
+<span class="c">## Casting</span>
 
-*Hash::Serializable* can automatically convert values from one type to another. For example, if one has a *RequestParams* object that serialized the query parameters in an HTTP request, and one wanted to define a *user_id* field that was an integer, one might do something like this:
-
-  ```crystal
-  struct RequestParams
-    use Hash::Serializable
-
-    @[Hash::Field(cast: :to_i)]
-    getter user_id : Int32
-  end
-
-  params = RequestParams.new({&quot;user_id&quot; =&gt; &quot;123&quot;})
-  pp params # &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;</code></pre>
-<p>One can also provide a proc to do the value conversion:</p>
-<pre><code class="language-crystal"><span class="k">struct</span> <span class="t">MyObj</span>
-  use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
-
-  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(
-    key: <span class="s">&quot;number&quot;</span>,
-    cast: <span class="o">-&gt;</span>(x : <span class="t">String</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Signed</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Unsigned</span> <span class="o">|</span> <span class="t">Float</span><span class="t">::</span><span class="t">Primitive</span>) <span class="k">do</span>
-      <span class="t">BigInt</span>.new(x) <span class="o">**</span> <span class="n">2</span>
-    <span class="k">end</span>)]
-  getter square : <span class="t">BigInt</span>
-<span class="k">end</span>
-
-obj <span class="o">=</span> <span class="t">MyObj</span>.new({<span class="s">&quot;number&quot;</span> <span class="o">=&gt;</span> <span class="n">12345678901234567890</span>})
-pp obj <span class="c"># &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;</span></code></pre>
-<p>The library does not yet support having procs or methods which will cast back to the original type.</p>
+<span class="o">*</span><span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span><span class="o">*</span> can automatically convert values from one <span class="k">type</span> to another. <span class="t">For</span> example, <span class="k">if</span> one has a <span class="o">*</span><span class="t">RequestParams</span><span class="o">*</span> object that serialized the query parameters <span class="k">in</span> an <span class="t">HTTP</span> request, and one wanted to define a <span class="o">*</span>user_id<span class="o">*</span> field that was an integer, one might <span class="k">do</span> something like this:
+</code></pre>
+<p>struct RequestParams
+use Hash::Serializable</p>
+<p>@[Hash::Field(cast: :to_i)]
+getter user_id : Int32
+end</p>
+<p>params = RequestParams.new({&quot;user_id&quot; =&gt; &quot;123&quot;})
+pp params # &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;</p>
+<pre><code class="language-crystal">
+<span class="t">One</span> can also provide a proc to <span class="k">do</span> the value conversion:
+</code></pre>
+<p>struct MyObj
+use Hash::Serializable</p>
+<p>@[Hash::Field(
+key: &quot;number&quot;,
+cast: -&gt;(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
+BigInt.new(x) ** 2
+end)]
+getter square : BigInt
+end</p>
+<p>obj = MyObj.new({&quot;number&quot; =&gt; 12345678901234567890})
+pp obj # &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;</p>
+<pre><code class="language-crystal">
+<span class="t">The</span> library does not yet support having procs or methods which will cast back to the original <span class="k">type</span>.</code></pre>
 
 
 
@@ -280,6 +278,11 @@ pp obj <span class="c"># &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=1524157875323
   
     
       hash_serializable.cr
+    
+    <br/>
+  
+    
+      version.cr
     
     <br/>
   
