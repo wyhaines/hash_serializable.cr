@@ -1,6 +1,8 @@
 # hash_serializable
 
-![Send.cr CI](https://img.shields.io/github/workflow/status/wyhaines/hash_serializable.cr/hash_serializable%20CI?style=for-the-badge&logo=GitHub)
+[![hash_serializable.cr CI](https://github.com/wyhaines/hash_serializable.cr/actions/workflows/ci.yml/badge.svg)](https://github.com/wyhaines/hash_serializable.cr/actions/workflows/ci.yml)
+[![hash_serializable.cr Build Docs](https://github.com/wyhaines/hash_serializable.cr/actions/workflows/build_docs.yml/badge.svg)](https://github.com/wyhaines/hash_serializable.cr/actions/workflows/build_docs.yml)
+
 [![GitHub release](https://img.shields.io/github/release/wyhaines/hash_serializable.cr.svg?style=for-the-badge)](https://github.com/wyhaines/hash_serializable.cr/releases)
 ![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/wyhaines/hash_serializable.cr/latest?style=for-the-badge)
 
