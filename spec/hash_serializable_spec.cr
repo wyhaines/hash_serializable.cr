@@ -78,7 +78,7 @@ describe Hash::Serializable do
     end
 
     e.should be_nil
-    obj.not_nil!.val.should eq 123
+    obj.try &.val.should eq 123
 
     begin
       TestStrict.from_hash({"val" => 456, "extra" => "that's me!"})
@@ -128,10 +128,10 @@ describe Hash::Serializable do
     house.is_a?(House).should be_true
     house.address.should eq "Crystal Road 1234"
     house.location.is_a?(Location).should be_true
-    house.location.not_nil!.latitude.should eq 12.3
-    house.location.not_nil!.longitude.should eq 34.5
+    house.location.try &.latitude.should eq 12.3
+    house.location.try &.longitude.should eq 34.5
     house.note.message.should eq "Nice Address"
-    house.location.not_nil!.note.message.should eq "hmmmm"
+    house.location.try &.note.message.should eq "hmmmm"
     house.to_hash.should eq arg
   end
 
@@ -149,7 +149,7 @@ describe Hash::Serializable do
     }
 
     house = House.from_hash(arg)
-    house.location.not_nil!.note.message.should eq "DEFAULT"
+    house.location.try &.note.message.should eq "DEFAULT"
   end
 
   it "can cast values from hash to object, using both methods and procs" do

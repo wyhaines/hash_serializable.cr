@@ -1,3 +1,5 @@
+require "./version"
+
 class Hash
   annotation Field
   end
@@ -118,45 +120,43 @@ class Hash
   # a.to_json                         # => {"a":1,"b":2}
   # ```
   #
-  ### Casting
+  # ## Casting
   #
   # *Hash::Serializable* can automatically convert values from one type to another. For example, if one has a *RequestParams* object that serialized the query parameters in an HTTP request, and one wanted to define a *user_id* field that was an integer, one might do something like this:
   #
-  #   ```crystal
-  #   struct RequestParams
-  #     use Hash::Serializable
+  #   ```
+  # struct RequestParams
+  #   use Hash::Serializable
   #
-  #     @[Hash::Field(cast: :to_i)]
-  #     getter user_id : Int32
-  #   end
+  #   @[Hash::Field(cast: :to_i)]
+  #   getter user_id : Int32
+  # end
   #
-  #   params = RequestParams.new({"user_id" => "123"})
-  #   pp params # >    #<RequestParams:0x7f2653e2f080 @user_id=123 >
+  # params = RequestParams.new({"user_id" => "123"})
+  # pp params # >    #<RequestParams:0x7f2653e2f080 @user_id=123 >
   #   ```
   #
   #   One can also provide a proc to do the value conversion:
   #
-  #   ```crystal
-  #   struct MyObj
-  #     use Hash::Serializable
+  #   ```
+  # struct MyObj
+  #   use Hash::Serializable
   #
-  #     @[Hash::Field(
-  #       key: "number",
-  #       cast: ->(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
-  #         BigInt.new(x) ** 2
-  #       end)]
-  #     getter square : BigInt
-  #   end
+  #   @[Hash::Field(
+  #     key: "number",
+  #     cast: ->(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
+  #       BigInt.new(x) ** 2
+  #     end)]
+  #   getter square : BigInt
+  # end
   #
-  #   obj = MyObj.new({"number" => 12345678901234567890})
-  #   pp obj # >    #<MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100>
+  # obj = MyObj.new({"number" => 12345678901234567890})
+  # pp obj # >    #<MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100>
   #   ```
   #
   #   The library does not yet support having procs or methods which will cast back to the original type.
   #
   module Serializable
-    VERSION = "0.2.0"
-
     macro included
       def self.new
         super
@@ -195,32 +195,30 @@ class Hash
       {% begin %}
         {% # Generate a reference table for all of the properties that can be deserialized to
 
-        properties = {} of Nil => Nil %}
-        {% for ivar in @type.instance_vars %}
-          {% ann = ivar.annotation(::Hash::Field) %}
-          {% unless ann && (ann[:ignore] || ann[:ignore_deserialize]) %}
-            {%
-              properties[ivar.id] = {
-                type:        ivar.type,
-                key:         ((ann && ann[:key]) || ivar).id.stringify,
-                has_default: ivar.has_default_value?,
-                default:     ivar.default_value,
-                nilable:     ivar.type.nilable?,
-                root:        ann && ann[:root],
-                cast:        ann && ann[:cast],
-                presence:    ann && ann[:presence],
-              }
-            %}
+ properties = {} of Nil => Nil %}
+          {% for ivar in @type.instance_vars %}
+            {% ann = ivar.annotation(::Hash::Field) %}
+            {% unless ann && (ann[:ignore] || ann[:ignore_deserialize]) %}
+              {%
+                properties[ivar.id] = {
+                  type:        ivar.type,
+                  key:         ((ann && ann[:key]) || ivar).id.stringify,
+                  has_default: ivar.has_default_value?,
+                  default:     ivar.default_value,
+                  nilable:     ivar.type.nilable?,
+                  root:        ann && ann[:root],
+                  cast:        ann && ann[:cast],
+                  presence:    ann && ann[:presence],
+                }
+              %}
+            {% end %}
           {% end %}
-        {% end %}
 
-        found = {} of String => Bool
-        {% for name, value in properties %}
-          if hash.has_key?({{ value[:key] }})
-            found[{{ value[:key] }}] = true
-            {%
-              # If a cast is defined, attempt to convert values.
-            %}
+          found = {} of String => Bool
+          {% for name, value in properties %}
+            if hash.has_key?({{ value[:key] }})
+              found[{{ value[:key] }}] = true
+
             {% if value[:cast] %}
               {% if value[:cast].is_a?(ProcLiteral) %}
                 inner_val = {{ value[:cast] }}.call(hash[{{ value[:key] }}])
@@ -311,97 +309,96 @@ class Hash
 
     def to_hash
       {% begin %}
-        {%
-          # This monsterous code walks the object structure, finding all of the
-          # instance variables in all of the nested objects in order to determine
-          # what the type signature must be for the generated Hash.
-          # Walking an arbitrarily nested structure when one can't define any sort
-          # of method or proc, can't use while loops, can't use next or break, and
-          # can't delete elements from an array, among other restrictions, is tricky.
-          tstack = [] of Nil # tstack is the type stack
-          ostack = [] of Nil # ostack is the object stack
-          estack = [] of Nil # estack is the element stack - actually array indexes to be used with the ostack
+        {% # This monsterous code walks the object structure, finding all of the
+# instance variables in all of the nested objects in order to determine
+# what the type signature must be for the generated Hash.
+# Walking an arbitrarily nested structure when one can't define any sort
+# of method or proc, can't use while loops, can't use next or break, and
+# can't delete elements from an array, among other restrictions, is tricky.
 
-          tstack << [] of Nil
-          ostack << @type.instance_vars
-          estack << (0..(@type.instance_vars.size - 1)).to_a
+ tstack = [] of Nil # tstack is the type stack
+ ostack = [] of Nil # ostack is the object stack
+ estack = [] of Nil # estack is the element stack - actually array indexes to be used with the ostack
 
-          (1..99999).each do # while loops aren't allowed, so we just pick an arbitrary number that is probably big enough
-            if !ostack.empty? # These lines implement a really inefficient array pop.
-              o = ostack.last
-              oo = ostack
-              ostack = [] of Nil
-              (0..(oo.size - 2)).each do |idx|
-                ostack << oo[idx]
-              end
+ tstack << [] of Nil
+ ostack << @type.instance_vars
+ estack << (0..(@type.instance_vars.size - 1)).to_a
 
-              keys = estack.last
-              oe = estack
-              estack = [] of Nil
-              (0..(oe.size - 2)).each do |idx|
-                estack << oe[idx]
-              end
+ (1..99999).each do  # while loops aren't allowed, so we just pick an arbitrary number that is probably big enough
+   if !ostack.empty? # These lines implement a really inefficient array pop.
+     o = ostack.last
+     oo = ostack
+     ostack = [] of Nil
+     (0..(oo.size - 2)).each do |idx|
+       ostack << oo[idx]
+     end
 
-              if !keys.nil? && !keys.empty?
-                (1..99999).each do
-                  if !keys.nil? && !keys.empty?
-                    e = keys.first
-                    ok = keys
-                    keys = [] of Nil
-                    (1..(ok.size - 1)).each do |idx|
-                      keys << ok[idx]
-                    end
-                    if o[e].type.union_types.reject { |typ| typ == Nil }.first.class.methods.map(&.name.stringify).includes?("from_hash")
-                      oe = o[e].type.union_types.reject { |typ| typ == Nil }.first
-                      tstack << [] of Nil
-                      ostack << o
-                      estack << keys
-                      ostack << oe.instance_vars
-                      estack << (0..(oe.instance_vars.size - 1)).to_a
-                      keys = [] of Nil
-                    else
-                      if o[e].type.nilable?
-                        tstack.last << "#{o[e].type} | Nil"
-                      else
-                        tstack.last << o[e].type
-                      end
+     keys = estack.last
+     oe = estack
+     estack = [] of Nil
+     (0..(oe.size - 2)).each do |idx|
+       estack << oe[idx]
+     end
 
-                      if keys.empty? && tstack.size > 1
-                        ot = tstack
-                        top = tstack.last
-                        tstack = [] of Nil
-                        (0..(ot.size - 2)).each do |idx|
-                          tstack << ot[idx]
-                        end
-                        tstack.last << top
-                        tstack.last << Nil
-                      end
-                    end
-                  end
-                end
-              elsif tstack.size > 1
-                ot = tstack
-                top = tstack.last
-                tstack = [] of Nil
-                (0..(ot.size - 2)).each do |idx|
-                  tstack << ot[idx]
-                end
-                tstack.last << top
-              end
-            end
-          end
+     if !keys.nil? && !keys.empty?
+       (1..99999).each do
+         if !keys.nil? && !keys.empty?
+           e = keys.first
+           ok = keys
+           keys = [] of Nil
+           (1..(ok.size - 1)).each do |idx|
+             keys << ok[idx]
+           end
+           if o[e].type.union_types.reject { |typ| typ == Nil }.first.class.methods.map(&.name.stringify).includes?("from_hash")
+             oe = o[e].type.union_types.reject { |typ| typ == Nil }.first
+             tstack << [] of Nil
+             ostack << o
+             estack << keys
+             ostack << oe.instance_vars
+             estack << (0..(oe.instance_vars.size - 1)).to_a
+             keys = [] of Nil
+           else
+             if o[e].type.nilable?
+               tstack.last << "#{o[e].type} | Nil"
+             else
+               tstack.last << o[e].type
+             end
 
-          types = {} of TypeNode => Bool
-          tstack.first.each do |type|
-            types[type] = true
-          end
+             if keys.empty? && tstack.size > 1
+               ot = tstack
+               top = tstack.last
+               tstack = [] of Nil
+               (0..(ot.size - 2)).each do |idx|
+                 tstack << ot[idx]
+               end
+               tstack.last << top
+               tstack.last << Nil
+             end
+           end
+         end
+       end
+     elsif tstack.size > 1
+       ot = tstack
+       top = tstack.last
+       tstack = [] of Nil
+       (0..(ot.size - 2)).each do |idx|
+         tstack << ot[idx]
+       end
+       tstack.last << top
+     end
+   end
+ end
 
-          type_string = types.keys.map do |m|
-            m.id
-          end.join(" | ").id.
-          gsub(/\s*,\s*/, " | ").
-          gsub(/\[/, "Hash(String, ").gsub(/]/, ")").gsub(/Hash\(String\s*\|/, "Hash(String, ").id
-        %}
+ types = {} of TypeNode => Bool
+ tstack.first.each do |type|
+   types[type] = true
+ end
+
+ type_string = types.keys.map do |m|
+   m.id
+ end.join(" | ").id
+   .gsub(/\s*,\s*/, " | ")
+   .gsub(/\[/, "Hash(String, ").gsub(/]/, ")").gsub(/Hash\(String\s*\|/, "Hash(String, ").id %}
 
         h = {} of String => ({{ type_string }})
         {% for ivar in @type.instance_vars %}
@@ -418,7 +415,7 @@ class Hash
             end
           {% end %}
         {% end %}
-        {% if @type.instance_vars.select {|iv| iv.name.stringify == "hash_unmapped"}.empty? %}
+        {% if @type.instance_vars.select { |iv| iv.name.stringify == "hash_unmapped" }.empty? %}
           h
         {% else %}
           h.merge(@hash_unmapped)
@@ -451,7 +448,7 @@ class Hash
       @klass : String,
       @attribute : String? = nil
     )
-      super("#{message}\n  parsing #{klass}#{if (attribute = @attribute)
+      super("#{message}\n  parsing #{klass}#{if attribute = @attribute
                                                {"##{attribute}"}
                                              end}")
     end
