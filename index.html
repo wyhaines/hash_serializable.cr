@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 1.0.0">
-<meta name="crystal_docs.project_version" content="main">
+<meta name="generator" content="Crystal Docs 1.7.3">
+<meta name="crystal_docs.project_version" content="0.2.0">
 <meta name="crystal_docs.project_name" content="hash_serializable">
 
 
@@ -13,7 +13,7 @@
 <script type="text/javascript" src="js/doc.js"></script>
 
   <meta name="repository-name" content="hash_serializable">
-  <title>hash_serializable main</title>
+  <title>hash_serializable 0.2.0</title>
   <script type="text/javascript">
   CrystalDocs.base_path = "";
   </script>
@@ -39,7 +39,7 @@
       </h1>
 
       <span class="project-version">
-        main
+        0.2.0
       </span>
     </div>
   </div>
@@ -98,29 +98,23 @@
 
 
 <div class="main-content">
-<h1><a id="hash-serializable" class="anchor" href="#hash-serializable">
-  <svg class="octicon-link" aria-hidden="true">
+<h1><a id="hash-serializable" class="anchor" href="#hash-serializable">  <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>hash_serializable</h1>
-
-<p><img src="https://img.shields.io/github/workflow/status/wyhaines/hash_serializable.cr/hash_serializable%20CI?style=for-the-badge&logo=GitHub" alt="Send.cr CI"/>
-<a href="https://github.com/wyhaines/hash_serializable.cr/releases"><img src="https://img.shields.io/github/release/wyhaines/hash_serializable.cr.svg?style=for-the-badge" alt="GitHub release"/></a>
-<img src="https://img.shields.io/github/commits-since/wyhaines/hash_serializable.cr/latest?style=for-the-badge" alt="GitHub commits since latest release (by SemVer)"/></p>
-
+<p><img src="https://img.shields.io/github/workflow/status/wyhaines/hash_serializable.cr/hash_serializable%20CI?style=for-the-badge&amp;logo=GitHub" alt="Send.cr CI" />
+<a href="https://github.com/wyhaines/hash_serializable.cr/releases"><img src="https://img.shields.io/github/release/wyhaines/hash_serializable.cr.svg?style=for-the-badge" alt="GitHub release" /></a>
+<img src="https://img.shields.io/github/commits-since/wyhaines/hash_serializable.cr/latest?style=for-the-badge" alt="GitHub commits since latest release (by SemVer)" /></p>
 <p>It can be useful to be able to serialize and deserialize between hashes
 and objects the same way that one can between JSON and objects and YAML
 and objects. This implementation is aiming to be feature-consistent with
 JSON::Serializable and YAML::Serializable, while working with hashes.</p>
-
 <p>The <code><a href="Hash/Serializable.html">Hash::Serializable</a></code> module automatically generates methods for serialization when included.</p>
-
 <h3><a id="example" class="anchor" href="#example">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Example</h3>
-
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hash_serializable&quot;</span>
 
 <span class="k">class</span> <span class="t">Note</span>
@@ -150,15 +144,15 @@ JSON::Serializable and YAML::Serializable, while working with hashes.</p>
 <span class="k">end</span>
 
 arg <span class="o">=</span> {
-  <span class="s">&quot;note&quot;</span> => {
-    <span class="s">&quot;message&quot;</span> => <span class="s">&quot;Nice Address&quot;</span>,
+  <span class="s">&quot;note&quot;</span> <span class="o">=&gt;</span> {
+    <span class="s">&quot;message&quot;</span> <span class="o">=&gt;</span> <span class="s">&quot;Nice Address&quot;</span>,
   },
-  <span class="s">&quot;address&quot;</span>  => <span class="s">&quot;Crystal Road 1234&quot;</span>,
-  <span class="s">&quot;location&quot;</span> => {
-    <span class="s">&quot;lat&quot;</span>  => <span class="n">12.3</span>,
-    <span class="s">&quot;lon&quot;</span>  => <span class="n">34.5</span>,
-    <span class="s">&quot;note&quot;</span> => {
-      <span class="s">&quot;message&quot;</span> => <span class="s">&quot;hmmmm&quot;</span>,
+  <span class="s">&quot;address&quot;</span>  <span class="o">=&gt;</span> <span class="s">&quot;Crystal Road 1234&quot;</span>,
+  <span class="s">&quot;location&quot;</span> <span class="o">=&gt;</span> {
+    <span class="s">&quot;lat&quot;</span>  <span class="o">=&gt;</span> <span class="n">12.3</span>,
+    <span class="s">&quot;lon&quot;</span>  <span class="o">=&gt;</span> <span class="n">34.5</span>,
+    <span class="s">&quot;note&quot;</span> <span class="o">=&gt;</span> {
+      <span class="s">&quot;message&quot;</span> <span class="o">=&gt;</span> <span class="s">&quot;hmmmm&quot;</span>,
     },
   },
 }
@@ -172,46 +166,39 @@ house.location.not_nil!.longitude.should eq <span class="n">34.5</span>
 house.note.message.should eq <span class="s">&quot;Nice Address&quot;</span>
 house.location.not_nil!.note.message.should eq <span class="s">&quot;hmmmm&quot;</span>
 house.to_hash.should eq arg</code></pre>
-
 <h2><a id="installation" class="anchor" href="#installation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Installation</h2>
-
-<ol><li>Add the dependency to your <code>shard.yml</code>:</li></ol>
-
-<p><code></code>`yaml
-   dependencies:</p>
-
-<pre><code class="language-crystal"> hash_serializable:
-   github: your-github-user/hash_serializable</code></pre>
-
-<p><code></code>`</p>
-
-<ol><li>Run <code>shards install</code></li></ol>
-
+<ol>
+<li>
+<p>Add the dependency to your <code>shard.yml</code>:</p>
+<pre><code class="language-yaml">dependencies:
+  hash_serializable:
+    github: your-github-user/hash_serializable</code></pre>
+</li>
+<li>
+<p>Run <code>shards install</code></p>
+</li>
+</ol>
 <h2><a id="usage" class="anchor" href="#usage">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Usage</h2>
-
 <p>Including <code><a href="Hash/Serializable.html">Hash::Serializable</a></code> will create <code>#to_hash</code> and <code>self.from_hash</code> methods
 on the current class, and a constructor which takes a Hash. By default, <code>self.from_hash</code>
 will deserialize a Hash into an instance of the object that it is passed to, according
 to the definition of the class, and <code>#to_hash</code> will serialize the class into a Hash
 containing the value of every instance variable, the keys being the instance variable
 names.</p>
-
 <p>It will descend through a nested class structure, where variables in one class
 point to objects that, in turn, have instance variables. It should also deal correctly
 with type unions.</p>
-
 <p>To change how individual instance variables are parsed and serialized, the annotation
 <code><a href="Hash/Field.html">Hash::Field</a></code> can be placed on the instance variable. Annotating property, getter, and
 setter macros is also allowed.</p>
-
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hash_serializable&quot;</span>
 
 <span class="k">struct</span> <span class="t">A</span>
@@ -220,26 +207,26 @@ setter macros is also allowed.</p>
   @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(key: <span class="s">&quot;my_key&quot;</span>)]
   getter a : <span class="t">Int32</span>?
 <span class="k">end</span></code></pre>
-
 <p><code><a href="Hash/Field.html">Hash::Field</a></code> properties:</p>
-
-<ul><li><strong>ignore</strong>: if <code>true</code> skip this field in serialization and deserialization (by default false)</li><li><strong>ignore_serialize</strong>: if <code>true</code> skip this field in serialization (by default false)</li><li><strong>ignore_deserialize</strong>: if <code>true</code> skip this field in deserialization (by default false)</li><li><strong>key</strong>: the value of the key in the json object (by default the name of the instance variable)</li><li><strong>cast</strong>: takes either a proc, or a method name; if proc, the hash value will be passed to the proc, and the return value will be used as the value of the instance variable; if method, the method will be called <em>on</em> the hash value, and the return value used for the instance variable value</li><li><strong>presence</strong>: if <code>true</code>, a <code>@{{key}}_present</code> instance variable will be generated when the key was present (even if it has a <code>null</code> value), <code>false</code> by default; this does not declare the <code>@{{key}}_present</code> variable for you, so you will be responsible for ensuring that a Bool variable is declared</li></ul>
-
+<ul>
+<li><strong>ignore</strong>: if <code>true</code> skip this field in serialization and deserialization (by default false)</li>
+<li><strong>ignore_serialize</strong>: if <code>true</code> skip this field in serialization (by default false)</li>
+<li><strong>ignore_deserialize</strong>: if <code>true</code> skip this field in deserialization (by default false)</li>
+<li><strong>key</strong>: the value of the key in the json object (by default the name of the instance variable)</li>
+<li><strong>cast</strong>: takes either a proc, or a method name; if proc, the hash value will be passed to the proc, and the return value will be used as the value of the instance variable; if method, the method will be called <em>on</em> the hash value, and the return value used for the instance variable value</li>
+<li><strong>presence</strong>: if <code>true</code>, a <code>@{{key}}_present</code> instance variable will be generated when the key was present (even if it has a <code>null</code> value), <code>false</code> by default; this does not declare the <code>@{{key}}_present</code> variable for you, so you will be responsible for ensuring that a Bool variable is declared</li>
+</ul>
 <p>Deserialization respects default values of variables.</p>
-
 <h3><a id="extensions-hashserializablestrict-and-hashserializableunmapped" class="anchor" href="#extensions-hashserializablestrict-and-hashserializableunmapped">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Extensions: <code><a href="Hash/Serializable/Strict.html">Hash::Serializable::Strict</a></code> and <code><a href="Hash/Serializable/Unmapped.html">Hash::Serializable::Unmapped</a></code></h3>
-
 <p>If the <code><a href="Hash/Serializable/Strict.html">Hash::Serializable::Strict</a></code> module is included, unknown properties in the Hash
 document will raise an exception. By default the unknown properties are silently ignored.</p>
-
 <p>If the <code><a href="Hash/Serializable/Unmapped.html">Hash::Serializable::Unmapped</a></code> module is included, unknown properties in the Hash
 will be stored in a hash with an appropriate type signature. On serialization, any keys inside json_unmapped
 will be serialized into the hash, as well.</p>
-
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hash_serializable&quot;</span>
 
 <span class="k">struct</span> <span class="t">A</span>
@@ -250,15 +237,12 @@ will be serialized into the hash, as well.</p>
 
 a <span class="o">=</span> <span class="t">A</span>.from_json(<span class="s">%({&quot;a&quot;:1,&quot;b&quot;:2})</span>) <span class="c"># =&gt; A(@json_unmapped={&quot;b&quot; =&gt; 2_i64}, @a=1)</span>
 a.to_json                         <span class="c"># =&gt; {&quot;a&quot;:1,&quot;b&quot;:2}</span></code></pre>
-
 <h3><a id="casting" class="anchor" href="#casting">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Casting</h3>
-
 <p><em>Hash::Serializable</em> can automatically convert values from one type to another. For example, if one has a <em>RequestParams</em> object that serialized the query parameters in an HTTP request, and one wanted to define a <em>user_id</em> field that was an integer, one might do something like this:</p>
-
 <pre><code class="language-crystal"><span class="k">struct</span> <span class="t">RequestParams</span>
   use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
 
@@ -266,55 +250,52 @@ a.to_json                         <span class="c"># =&gt; {&quot;a&quot;:1,&quot
   getter user_id : <span class="t">Int32</span>
 <span class="k">end</span>
 
-params <span class="o">=</span> <span class="t">RequestParams</span>.<span class="k">new</span>({<span class="s">&quot;user_id&quot;</span> => <span class="s">&quot;123&quot;</span>})
+params <span class="o">=</span> <span class="t">RequestParams</span>.new({<span class="s">&quot;user_id&quot;</span> <span class="o">=&gt;</span> <span class="s">&quot;123&quot;</span>})
 pp params <span class="c"># &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;</span></code></pre>
-
 <p>One can also provide a proc to do the value conversion:</p>
-
 <pre><code class="language-crystal"><span class="k">struct</span> <span class="t">MyObj</span>
   use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
 
   @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(
     key: <span class="s">&quot;number&quot;</span>,
-    cast: ->(x : <span class="t">String</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Signed</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Unsigned</span> <span class="o">|</span> <span class="t">Float</span><span class="t">::</span><span class="t">Primitive</span>) <span class="k">do</span>
-      <span class="t">BigInt</span>.<span class="k">new</span>(x) <span class="o">**</span> <span class="n">2</span>
+    cast: <span class="o">-&gt;</span>(x : <span class="t">String</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Signed</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Unsigned</span> <span class="o">|</span> <span class="t">Float</span><span class="t">::</span><span class="t">Primitive</span>) <span class="k">do</span>
+      <span class="t">BigInt</span>.new(x) <span class="o">**</span> <span class="n">2</span>
     <span class="k">end</span>)]
   getter square : <span class="t">BigInt</span>
 <span class="k">end</span>
 
-obj <span class="o">=</span> <span class="t">MyObj</span>.<span class="k">new</span>({<span class="s">&quot;number&quot;</span> => <span class="n">12345678901234567890</span>})
+obj <span class="o">=</span> <span class="t">MyObj</span>.new({<span class="s">&quot;number&quot;</span> <span class="o">=&gt;</span> <span class="n">12345678901234567890</span>})
 pp obj <span class="c"># &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;</span></code></pre>
-
 <p>The library does not yet support having procs or methods which will cast back to the original type.</p>
-
 <h2><a id="development" class="anchor" href="#development">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Development</h2>
-
 <p>If you want to help to fix bugs, clean up the code or the documentation, or help with additional features, fork the repository, and work in your fork, and then create a pull request against this repository.</p>
-
 <p>Check <a href="https://github.com/wyhaines/hash_serializable.cr/issues">issues</a> for any known problems, and create new issues if you have problems or questions or feature requests.</p>
-
 <h2><a id="contributing" class="anchor" href="#contributing">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Contributing</h2>
-
-<ol><li>Fork it (&lt;https://github.com/wyhaines/hash_serializable/fork>)</li><li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li><li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li><li>Push to the branch (<code>git push origin my-new-feature</code>)</li><li>Create a new Pull Request</li></ol>
-
+<ol>
+<li>Fork it (<a href="https://github.com/wyhaines/hash_serializable/fork">https://github.com/wyhaines/hash_serializable/fork</a>)</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
 <h2><a id="contributors" class="anchor" href="#contributors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Contributors</h2>
-
-<ul><li><a href="https://github.com/wyhaines">Kirk Haines</a> - creator and maintainer</li></ul>
-
-<p><img src="https://img.shields.io/github/languages/code-size/wyhaines/hash_serializable.cr?style=for-the-badge" alt="GitHub code size in bytes"/>
-<img src="https://img.shields.io/github/issues/wyhaines/hash_serializable.cr?style=for-the-badge" alt="GitHub issues"/></p>
+<ul>
+<li><a href="https://github.com/wyhaines">Kirk Haines</a> - creator and maintainer</li>
+</ul>
+<p><img src="https://img.shields.io/github/languages/code-size/wyhaines/hash_serializable.cr?style=for-the-badge" alt="GitHub code size in bytes" />
+<img src="https://img.shields.io/github/issues/wyhaines/hash_serializable.cr?style=for-the-badge" alt="GitHub issues" /></p>
 </div>
 </body>
 </html>

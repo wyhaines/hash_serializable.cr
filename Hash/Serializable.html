@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 1.0.0">
-<meta name="crystal_docs.project_version" content="main">
+<meta name="generator" content="Crystal Docs 1.7.3">
+<meta name="crystal_docs.project_version" content="0.2.0">
 <meta name="crystal_docs.project_name" content="hash_serializable">
 
 
@@ -13,7 +13,7 @@
 <script type="text/javascript" src="../js/doc.js"></script>
 
   <meta name="repository-name" content="hash_serializable">
-  <title>Hash::Serializable - hash_serializable main</title>
+  <title>Hash::Serializable - hash_serializable 0.2.0</title>
   <script type="text/javascript">
     CrystalDocs.base_path = "../";
   </script>
@@ -39,7 +39,7 @@
       </h1>
 
       <span class="project-version">
-        main
+        0.2.0
       </span>
     </div>
   </div>
@@ -118,13 +118,11 @@
   </h2>
 
   <p>The <code><a href="../Hash/Serializable.html">Hash::Serializable</a></code> module automatically generates methods for serialization when included.</p>
-
 <h3><a id="example" class="anchor" href="#example">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Example</h3>
-
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hash_serializable&quot;</span>
 
 <span class="k">class</span> <span class="t">Note</span>
@@ -154,15 +152,15 @@
 <span class="k">end</span>
 
 arg <span class="o">=</span> {
-  <span class="s">&quot;note&quot;</span> => {
-    <span class="s">&quot;message&quot;</span> => <span class="s">&quot;Nice Address&quot;</span>,
+  <span class="s">&quot;note&quot;</span> <span class="o">=&gt;</span> {
+    <span class="s">&quot;message&quot;</span> <span class="o">=&gt;</span> <span class="s">&quot;Nice Address&quot;</span>,
   },
-  <span class="s">&quot;address&quot;</span>  => <span class="s">&quot;Crystal Road 1234&quot;</span>,
-  <span class="s">&quot;location&quot;</span> => {
-    <span class="s">&quot;lat&quot;</span>  => <span class="n">12.3</span>,
-    <span class="s">&quot;lon&quot;</span>  => <span class="n">34.5</span>,
-    <span class="s">&quot;note&quot;</span> => {
-      <span class="s">&quot;message&quot;</span> => <span class="s">&quot;hmmmm&quot;</span>,
+  <span class="s">&quot;address&quot;</span>  <span class="o">=&gt;</span> <span class="s">&quot;Crystal Road 1234&quot;</span>,
+  <span class="s">&quot;location&quot;</span> <span class="o">=&gt;</span> {
+    <span class="s">&quot;lat&quot;</span>  <span class="o">=&gt;</span> <span class="n">12.3</span>,
+    <span class="s">&quot;lon&quot;</span>  <span class="o">=&gt;</span> <span class="n">34.5</span>,
+    <span class="s">&quot;note&quot;</span> <span class="o">=&gt;</span> {
+      <span class="s">&quot;message&quot;</span> <span class="o">=&gt;</span> <span class="s">&quot;hmmmm&quot;</span>,
     },
   },
 }
@@ -194,16 +192,12 @@ point to objects that, <span class="k">in</span> turn, have instance variables. 
 <span class="s">`Hash::Field`</span> can be placed on the instance variable. <span class="t">Annotating</span> property, getter, and
 setter macros is also allowed.
 </code></pre>
-
-<p>require "hash_serializable"</p>
-
+<p>require &quot;hash_serializable&quot;</p>
 <p>struct A
-  include Hash::Serializable</p>
-
-<p>@[Hash::Field(key: "my_key")]
-  getter a : Int32?
+include Hash::Serializable</p>
+<p>@[Hash::Field(key: &quot;my_key&quot;)]
+getter a : Int32?
 end</p>
-
 <pre><code class="language-crystal">
 <span class="s">`Hash::Field`</span> properties:
 <span class="o">*</span> <span class="o">**</span>ignore<span class="o">**</span>: <span class="k">if</span> <span class="s">`true`</span> skip this field <span class="k">in</span> serialization and deserialization (by default <span class="n">false</span>)
@@ -223,24 +217,20 @@ document will raise an exception. <span class="t">By</span> default the unknown 
 <span class="t">If</span> the <span class="s">`Hash::Serializable::Unmapped`</span> <span class="k">module</span> is included, unknown properties <span class="k">in</span> the <span class="t">Hash</span>
 will be stored <span class="k">in</span> a hash <span class="k">with</span> an appropriate <span class="k">type</span> signature. <span class="t">On</span> serialization, any keys inside json_unmapped
 will be serialized into the hash, <span class="k">as</span> well.</code></pre>
-
-<p>require "hash_serializable"</p>
-
+<p>require &quot;hash_serializable&quot;</p>
 <p>struct A
-  include Hash::Serializable
-  include Hash::Serializable::Unmapped
-  @a : Int32
+include Hash::Serializable
+include Hash::Serializable::Unmapped
+@a : Int32
 end</p>
-
-<p>a = A.from_json(%({"a":1,"b":2})) # => A(@json_unmapped={"b" => 2_i64}, @a=1)
-a.to_json                         # => {"a":1,"b":2}</p>
-
+<p>a = A.from_json(%({&quot;a&quot;:1,&quot;b&quot;:2})) # =&gt; A(@json_unmapped={&quot;b&quot; =&gt; 2_i64}, @a=1)
+a.to_json                         # =&gt; {&quot;a&quot;:1,&quot;b&quot;:2}</p>
 <pre><code class="language-crystal">
-<span class="c">## Casting</span>
+## Casting
 
-<span class="o">*</span><span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span><span class="o">*</span> can automatically convert values from one <span class="k">type</span> to another. <span class="t">For</span> example, <span class="k">if</span> one has a <span class="o">*</span><span class="t">RequestParams</span><span class="o">*</span> object that serialized the query parameters <span class="k">in</span> an <span class="t">HTTP</span> request, and one wanted to define a <span class="o">*</span>user_id<span class="o">*</span> field that was an integer, one might <span class="k">do</span> something like this:
+*Hash::Serializable* can automatically convert values from one type to another. For example, if one has a *RequestParams* object that serialized the query parameters in an HTTP request, and one wanted to define a *user_id* field that was an integer, one might do something like this:
 
-  <span class="s">``</span><span class="s">`crystal
+  ```crystal
   struct RequestParams
     use Hash::Serializable
 
@@ -249,28 +239,22 @@ a.to_json                         # => {"a":1,"b":2}</p>
   end
 
   params = RequestParams.new({&quot;user_id&quot; =&gt; &quot;123&quot;})
-  pp params # &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;
-  `</span><span class="s">``</span>
+  pp params # &gt;    #&lt;RequestParams:0x7f2653e2f080 @user_id=123 &gt;</code></pre>
+<p>One can also provide a proc to do the value conversion:</p>
+<pre><code class="language-crystal"><span class="k">struct</span> <span class="t">MyObj</span>
+  use <span class="t">Hash</span><span class="t">::</span><span class="t">Serializable</span>
 
-  <span class="t">One</span> can also provide a proc to <span class="k">do</span> the value conversion:
+  @[<span class="t">Hash</span><span class="t">::</span><span class="t">Field</span>(
+    key: <span class="s">&quot;number&quot;</span>,
+    cast: <span class="o">-&gt;</span>(x : <span class="t">String</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Signed</span> <span class="o">|</span> <span class="t">Int</span><span class="t">::</span><span class="t">Unsigned</span> <span class="o">|</span> <span class="t">Float</span><span class="t">::</span><span class="t">Primitive</span>) <span class="k">do</span>
+      <span class="t">BigInt</span>.new(x) <span class="o">**</span> <span class="n">2</span>
+    <span class="k">end</span>)]
+  getter square : <span class="t">BigInt</span>
+<span class="k">end</span>
 
-  <span class="s">``</span><span class="s">`crystal
-  struct MyObj
-    use Hash::Serializable
-
-    @[Hash::Field(
-      key: &quot;number&quot;,
-      cast: -&gt;(x : String | Int::Signed | Int::Unsigned | Float::Primitive) do
-        BigInt.new(x) ** 2
-      end)]
-    getter square : BigInt
-  end
-
-  obj = MyObj.new({&quot;number&quot; =&gt; 12345678901234567890})
-  pp obj # &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;
-  `</span><span class="s">``</span>
-
-  <span class="t">The</span> library does not yet support having procs or methods which will cast back to the original <span class="k">type</span>.</code></pre>
+obj <span class="o">=</span> <span class="t">MyObj</span>.new({<span class="s">&quot;number&quot;</span> <span class="o">=&gt;</span> <span class="n">12345678901234567890</span>})
+pp obj <span class="c"># &gt;    #&lt;MyObj:0x7fc5adbe5e80 @square=152415787532388367501905199875019052100&gt;</span></code></pre>
+<p>The library does not yet support having procs or methods which will cast back to the original type.</p>
 
 
 
@@ -295,9 +279,7 @@ a.to_json                         # => {"a":1,"b":2}</p>
   </h2>
   
     
-      <a href="https://github.com/wyhaines/hash_serializable.cr/blob/7c685f778de7d86f4266bfd55e21f6dd03992123/src/hash_serializable.cr#L157" target="_blank">
-        hash_serializable.cr
-      </a>
+      hash_serializable.cr
     
     <br/>
   
@@ -336,7 +318,7 @@ a.to_json                         # => {"a":1,"b":2}</p>
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new(hash:U)forallU-class-method" class="signature"><strong>.new</strong>(hash : U) forall U</a>
+        <a href="#new%28hash%3AU%29forallU-class-method" class="signature"><strong>.new</strong>(hash : U) forall U</a>
         
       </li>
     
@@ -386,13 +368,11 @@ a.to_json                         # => {"a":1,"b":2}</p>
         
         def self.<strong>new</strong>(hash : U) forall U
 
-        <a class="method-permalink" href="#new(hash:U)forallU-class-method">#</a>
+        <a class="method-permalink" href="#new%28hash%3AU%29forallU-class-method">#</a>
       </div>
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hash_serializable.cr/blob/7c685f778de7d86f4266bfd55e21f6dd03992123/src/hash_serializable.cr#L191" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -421,8 +401,6 @@ a.to_json                         # => {"a":1,"b":2}</p>
       
       <br/>
       <div>
-        
-          [<a href="https://github.com/wyhaines/hash_serializable.cr/blob/7c685f778de7d86f4266bfd55e21f6dd03992123/src/hash_serializable.cr#L312" target="_blank">View source</a>]
         
       </div>
     </div>
